@@ -37,6 +37,7 @@ RUN pip3 install torch torchvision torchaudio
 RUN pip install -r pip_requirements.txt
 RUN pip install -e .
 RUN mamba install pytorch-scatter -c pyg
+RUN apt-get update && apt-get install -y libgl1-mesa-glx
 
 # This command runs your application, comment out this line to compile only
 #CMD ["bash"]
