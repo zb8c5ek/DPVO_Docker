@@ -1,0 +1,43 @@
+ARG CUDA_VERSION="12.2.2"
+# CURRENT NVCC --VERSION ON BOTH COMPUTERS
+FROM nvidia/cuda:${CUDA_VERSION}-cudnn8-devel-ubuntu20.04
+
+# Env vars for the nvidia-container-runtime.
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
+
+ENV PATH="/root/miniconda3/bin:${PATH}"
+
+RUN apt-get update
+RUN apt-get install -y unzip sudo git
+
+RUN apt-get update
+RUN apt-get install -y wget && rm -rf /var/lib/apt/lists/*
+RUN wget \
+    https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+    && mkdir /root/.conda \
+    && bash Miniconda3-latest-Linux-x86_64.sh -b \
+    && rm -f Miniconda3-latest-Linux-x86_64.sh 
+
+RUN apt-get update
+
+RUN git clone https://github.com/princeton-vl/DPVO.git
+COPY mamba_environment.yml /DPVO/mamba_environment.yml
+COPY pip_requirements.txt /DPVO/pip_requirements.txt
+WORKDIR /DPVO
+
+RUN wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.zip
+RUN unzip eigen-3.4.0.zip -d thirdparty
+
+RUN conda init bash && . ~/.bashrc
+RUN conda install mamba -c conda-forge -y
+RUN mamba env create -f mamba_environment.yml
+RUN conda activate dpvo
+RUN pip3 install torch torchvision torchaudio
+RUN pip install -r pip_requirements.txt
+RUN pip install -e .
+RUN mamba install pytorch-scatter -c pyg
+
+# This command runs your application, comment out this line to compile only
+#CMD ["bash"]
+CMD ["/bin/bash", "-c", ". /root/miniconda3/etc/profile.d/conda.sh && conda activate dpvo && /bin/bash"]

@@ -1,4 +1,5 @@
-ARG CUDA_VERSION
+ARG CUDA_VERSION="12.2.2"
+# CURRENT NVCC --VERSION ON BOTH COMPUTERS
 FROM nvidia/cuda:${CUDA_VERSION}-cudnn8-devel-ubuntu20.04
 
 # Env vars for the nvidia-container-runtime.
